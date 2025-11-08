@@ -1,31 +1,30 @@
 // create an abstract class named Bank Account with private properties.
 abstract class BankAccount {
-  // private accountNumber
+  // private account number
   String _accountNumber;
-  // Private account holder name
+  // private account holder name
   String _accountHolderName;
-  // private balance
+  // private account balance
   double _balance;
+  // list to store transactions
   List<String> _transactions = [];
 
-  // constructor for the class Bank Account
-
+  // constructor
   BankAccount(this._accountNumber, this._accountHolderName, this._balance);
 
-  // getter to get the data (Hiding the data using getter)
-
+  // getters to read private data
   String get accountNumber => _accountNumber;
   String get accountHolderName => _accountHolderName;
   double get balance => _balance;
   List<String> get transactions => _transactions;
 
-  // setter to set the Account Holder Name
+  // setter to update account holder name
   set accountHolderName(String name) => _accountHolderName = name;
 
   void deposit(double amount);
   void withdraw(double amount);
 
-  // method to display an account information
+  // show account details
   void displayInfo() {
     print('Account Number: $_accountNumber');
     print('Holder: $_accountHolderName');
@@ -37,33 +36,32 @@ abstract class BankAccount {
   }
 }
 
+// interface for interest feature
 abstract class InterestBearing {
   void calculateInterest();
 }
 
-// Saving Account child clas of Bank Account
-
+// Savings Account (child of BankAccount)
 class SavingsAccount extends BankAccount implements InterestBearing {
-  // to track the withdrawal limit which is 3
+  // track number of withdrawals (limit 3)
   int _withdrawalsThisMonth = 0;
 
   SavingsAccount(String accountNumber, String accountHolderName, double balance)
     : super(accountNumber, accountHolderName, balance);
 
   @override
-  // deposit Amount
+  // deposit money
   void deposit(double amount) {
     if (amount <= 0) {
       print('Invalid deposit amount');
       return;
     }
-    // Add amount to the balance.
     _balance += amount;
-    // add those transaction
     _transactions.add('Deposited \$$amount');
   }
 
   @override
+  // withdraw money
   void withdraw(double amount) {
     if (amount <= 0) {
       print('Invalid withdrawal amount');
@@ -77,15 +75,13 @@ class SavingsAccount extends BankAccount implements InterestBearing {
       print('Withdrawal limit reached');
       return;
     }
-    // withdraw amount
     _balance -= amount;
-    // add the withdrawal in the month (limit 3)
     _withdrawalsThisMonth++;
-    // transaction added in the array of string
     _transactions.add('Withdrew \$$amount');
   }
 
   @override
+  // calculate and add interest
   void calculateInterest() {
     double interest = _balance * 0.02;
     _balance += interest;
@@ -93,14 +89,13 @@ class SavingsAccount extends BankAccount implements InterestBearing {
   }
 }
 
-// checking Account created in Bank Account
-
+// Checking Account
 class CheckingAccount extends BankAccount {
   CheckingAccount(String accountNumber, String holder, double balance)
     : super(accountNumber, holder, balance);
 
   @override
-  //deposit method
+  // deposit money
   void deposit(double amount) {
     if (amount <= 0) {
       print('Invalid deposit amount');
@@ -110,8 +105,8 @@ class CheckingAccount extends BankAccount {
     _transactions.add('Deposited \$$amount');
   }
 
-  // withdraw method
   @override
+  // withdraw money (apply overdraft fee if negative)
   void withdraw(double amount) {
     if (amount <= 0) {
       print('Invalid withdrawal amount');
@@ -119,22 +114,21 @@ class CheckingAccount extends BankAccount {
     }
     _balance -= amount;
 
-    // If I have 35 dollar and I try to withdraw 70 dollar, then -35$ is overdraft
     if (_balance < 0) {
-      _balance -= 35; // overdraft fee
+      _balance -= 35;
       _transactions.add('Overdraft fee applied: \$35');
     }
     _transactions.add('Withdrew \$$amount');
   }
 }
 
-//Premium Account
-
+// Premium Account
 class PremiumAccount extends BankAccount implements InterestBearing {
   PremiumAccount(String accountNumber, String holder, double balance)
     : super(accountNumber, holder, balance);
 
   @override
+  // deposit money
   void deposit(double amount) {
     if (amount <= 0) {
       print('Invalid deposit amount');
@@ -145,13 +139,12 @@ class PremiumAccount extends BankAccount implements InterestBearing {
   }
 
   @override
+  // withdraw money (keep at least 10,000)
   void withdraw(double amount) {
     if (amount <= 0) {
       print('Invalid withdrawal amount');
       return;
     }
-
-    // 10000 should be in account
     if (_balance - amount < 10000) {
       print('Cannot withdraw: minimum balance \$10,000 required');
       return;
@@ -161,6 +154,7 @@ class PremiumAccount extends BankAccount implements InterestBearing {
   }
 
   @override
+  // calculate and add interest
   void calculateInterest() {
     double interest = _balance * 0.05;
     _balance += interest;
@@ -168,11 +162,13 @@ class PremiumAccount extends BankAccount implements InterestBearing {
   }
 }
 
+// Student Account
 class StudentAccount extends BankAccount {
   StudentAccount(String accountNumber, String holder, double balance)
     : super(accountNumber, holder, balance);
 
   @override
+  // deposit money (max balance 5000)
   void deposit(double amount) {
     if (amount <= 0) {
       print('Invalid deposit amount');
@@ -187,6 +183,7 @@ class StudentAccount extends BankAccount {
   }
 
   @override
+  // withdraw money
   void withdraw(double amount) {
     if (amount <= 0) {
       print('Invalid withdrawal amount');
@@ -197,13 +194,16 @@ class StudentAccount extends BankAccount {
   }
 }
 
+// Bank class to manage all accounts
 class Bank {
   List<BankAccount> _accounts = [];
 
+  // add new account
   void createAccount(BankAccount account) {
     _accounts.add(account);
   }
 
+  // find account by number
   BankAccount? findAccount(String accountNumber) {
     try {
       return _accounts.firstWhere((acc) => acc.accountNumber == accountNumber);
@@ -212,6 +212,7 @@ class Bank {
     }
   }
 
+  // transfer money between accounts
   void transfer(String fromAccNum, String toAccNum, double amount) {
     var from = findAccount(fromAccNum);
     var to = findAccount(toAccNum);
@@ -224,6 +225,7 @@ class Bank {
     }
   }
 
+  // show all accounts info
   void generateReport() {
     for (var acc in _accounts) {
       acc.displayInfo();
@@ -231,6 +233,7 @@ class Bank {
     }
   }
 
+  // apply interest to accounts that support it
   void applyMonthlyInterest() {
     for (var acc in _accounts) {
       if (acc is InterestBearing) {
@@ -241,7 +244,7 @@ class Bank {
 }
 
 void main() {
-  // Example usage
+  // Example use
   var bank = Bank();
 
   var savings = SavingsAccount('S001', 'Alice', 1000);
@@ -256,9 +259,9 @@ void main() {
 
   savings.deposit(100);
   savings.withdraw(50);
-  checking.withdraw(600); // Overdraft
+  checking.withdraw(600); // overdraft
   premium.deposit(500);
-  student.deposit(4000); // Max balance check
+  student.deposit(4000); // max balance check
 
   bank.applyMonthlyInterest();
 
